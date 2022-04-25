@@ -16,15 +16,15 @@ type Request struct {
 }
 
 type Response struct {
-	code        int    `default:"200"`
-	contentType string `default:"text/html"`
+	code        int
+	contentType string
 	body        string
 }
 
 func main() {
 	listen, err := net.Listen("tcp", ":8080")
 	checkError(err)
-
+	fmt.Println("Server started.")
 	for {
 		conn, err := listen.Accept()
 		checkError(err)
@@ -70,8 +70,9 @@ func serveFile(conn net.Conn, filePath string) {
 	}
 	checkError(err)
 	response := Response{
-		code: 200,
-		body: string(data),
+		code:        200,
+		contentType: "text/html",
+		body:        string(data),
 	}
 	sendHTML(conn, response)
 }
@@ -87,8 +88,8 @@ func sendHTML(conn net.Conn, response Response) {
 	header := fmt.Sprintf("HTTP/1.1 %v OK\r\n"+
 		"Server: some go program\r\n"+
 		"Connection: close\r\n"+
-		"Content-Type: text/html; charset=UTF-8\r\n"+
-		"Content-Length: %v\r\n\r\n", response.code, len(response.body))
+		"Content-Type: %s; charset=UTF-8\r\n"+
+		"Content-Length: %v\r\n\r\n", response.code, response.contentType, len(response.body))
 	output := header + response.body
 	conn.Write([]byte(output))
 }
