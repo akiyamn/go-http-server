@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -71,7 +72,7 @@ func serveFile(conn net.Conn, filePath string) {
 	checkError(err)
 	response := Response{
 		code:        200,
-		contentType: "text/html",
+		contentType: getMimeType(filepath.Ext(filePath)),
 		body:        string(data),
 	}
 	sendHTML(conn, response)
@@ -80,7 +81,7 @@ func serveFile(conn net.Conn, filePath string) {
 func sendError(conn net.Conn, errorCode int) {
 	sendHTML(conn, Response{
 		code: errorCode,
-		body: fmt.Sprintf("<b>Error: %v</b><br /><marquee>You fucked up!</marquee>", errorCode),
+		body: fmt.Sprintf("<h2>Error: %v</h2><p>You messed up!</p>", errorCode),
 	})
 }
 
@@ -98,4 +99,29 @@ func checkError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func getMimeType(ext string) string {
+	mimes := map[string]string{
+		".html": "text/html",
+		".css":  "text/css",
+		".js":   "application/javascript",
+		".ico":  "image/x-icon",
+		".png":  "image/png",
+		".jpg":  "image/jpeg",
+		".jpeg": "image/jpeg",
+		".gif":  "image/gif",
+		".svg":  "image/svg+xml",
+		".mp4":  "video/mp4",
+		".mp3":  "audio/mpeg",
+		".ogg":  "audio/ogg",
+		".wav":  "audio/wav",
+		".webm": "video/webm",
+		".md":   "text/markdown",
+	}
+
+	if mime, ok := mimes[ext]; ok {
+		return mime
+	}
+	return "text/plain"
 }
